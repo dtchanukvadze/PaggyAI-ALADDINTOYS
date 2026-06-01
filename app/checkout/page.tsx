@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useForm } from '@formspree/react'
 import {
   ShoppingCart, Trash2, Plus, Minus, Send, CheckCircle,
-  User, Mail, Phone, MapPin, MessageSquare, Sparkles, Package
+  User, Mail, Phone, MapPin, MessageSquare, Sparkles, Package,
 } from 'lucide-react'
 import { useCartStore, useLang } from '@/components/CartProvider'
 import { insertOrder } from '@/lib/supabase'
@@ -20,9 +20,9 @@ function CartSummary() {
 
   if (items.length === 0) {
     return (
-      <div className="card flex flex-col items-center justify-center gap-4 py-16 text-center">
-        <ShoppingCart className="h-16 w-16 text-gray-300 dark:text-gray-700" />
-        <p className="text-gray-500 dark:text-gray-400">
+      <div className="card flex flex-col items-center justify-center gap-3 py-12 text-center">
+        <ShoppingCart className="h-12 w-12 text-gray-300 dark:text-gray-700" />
+        <p className="text-sm text-gray-500 dark:text-gray-400">
           {t('Your cart is empty.', 'კალათა ცარიელია.')}
         </p>
         <a href="/shop" className="btn-primary text-sm">
@@ -34,67 +34,78 @@ function CartSummary() {
 
   return (
     <div className="card">
-      <h2 className="mb-4 font-display text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+      <h2 className="mb-4 flex items-center gap-2 font-display text-lg font-bold text-gray-900 dark:text-white">
         <ShoppingCart className="h-5 w-5 text-pink-500" />
-        {t('Your Cart', 'შენი კალათა')} ({items.reduce((s, i) => s + i.quantity, 0)})
+        {t('Your Cart', 'შენი კალათა')}
+        <span className="ml-auto rounded-full bg-pink-100 px-2 py-0.5 text-xs font-bold text-pink-600 dark:bg-pink-900/30 dark:text-pink-400">
+          {items.reduce((s, i) => s + i.quantity, 0)}
+        </span>
       </h2>
 
-      <div className="space-y-3">
+      <div className="space-y-2">
         {items.map((item) => (
           <motion.div
             key={item.id}
             layout
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, x: 20 }}
-            className="flex items-center gap-3 rounded-2xl bg-gray-50 p-3 dark:bg-gray-800/50"
+            className="flex items-center gap-3 rounded-xl bg-gray-50 px-3 py-2.5 dark:bg-gray-800/50"
           >
-            <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-fuchsia-100 to-pink-100 text-2xl dark:from-fuchsia-900/40 dark:to-pink-900/40">
+            {/* Emoji / image */}
+            <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-white text-xl shadow-sm dark:bg-gray-700">
               {item.image}
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="truncate text-sm font-semibold text-gray-900 dark:text-white">
+
+            {/* Name + price */}
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-xs font-semibold text-gray-800 dark:text-gray-100">
                 {t(item.name, item.nameGe)}
               </p>
-              <p className="text-sm font-bold text-pink-600 dark:text-pink-400">
+              <p className="text-xs font-bold text-pink-600 dark:text-pink-400">
                 ₾{(item.price * item.quantity).toFixed(2)}
               </p>
             </div>
+
+            {/* Qty controls */}
             <div className="flex items-center gap-1">
               <button
                 type="button"
                 onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                className="flex h-7 w-7 items-center justify-center rounded-lg bg-white text-gray-600 shadow-sm hover:text-pink-600 dark:bg-gray-700 dark:text-gray-300"
+                className="flex h-6 w-6 items-center justify-center rounded-md bg-white text-gray-500 shadow-sm hover:text-pink-600 dark:bg-gray-700 dark:text-gray-300"
               >
                 <Minus className="h-3 w-3" />
               </button>
-              <span className="w-6 text-center text-sm font-bold text-gray-900 dark:text-white">
+              <span className="w-5 text-center text-xs font-bold text-gray-900 dark:text-white">
                 {item.quantity}
               </span>
               <button
                 type="button"
                 onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                className="flex h-7 w-7 items-center justify-center rounded-lg bg-white text-gray-600 shadow-sm hover:text-pink-600 dark:bg-gray-700 dark:text-gray-300"
+                className="flex h-6 w-6 items-center justify-center rounded-md bg-white text-gray-500 shadow-sm hover:text-pink-600 dark:bg-gray-700 dark:text-gray-300"
               >
                 <Plus className="h-3 w-3" />
               </button>
-              <button
-                type="button"
-                onClick={() => removeItem(item.id)}
-                className="ml-1 flex h-7 w-7 items-center justify-center rounded-lg text-gray-400 hover:text-rose-500"
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-              </button>
             </div>
+
+            {/* Remove */}
+            <button
+              type="button"
+              onClick={() => removeItem(item.id)}
+              className="flex h-6 w-6 items-center justify-center rounded-md text-gray-300 hover:text-rose-500 dark:text-gray-600"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </button>
           </motion.div>
         ))}
       </div>
 
-      <div className="mt-4 flex items-center justify-between rounded-2xl bg-gradient-to-r from-fuchsia-50 to-pink-50 px-4 py-3 dark:from-fuchsia-900/20 dark:to-pink-900/20">
-        <span className="font-semibold text-gray-700 dark:text-gray-300">
+      {/* Total */}
+      <div className="mt-4 flex items-center justify-between rounded-xl bg-gradient-to-r from-fuchsia-50 to-pink-50 px-4 py-3 dark:from-fuchsia-900/20 dark:to-pink-900/20">
+        <span className="text-sm font-semibold text-gray-600 dark:text-gray-300">
           {t('Total', 'სულ')}
         </span>
-        <span className="font-display text-2xl font-black text-pink-600 dark:text-pink-400">
+        <span className="font-display text-xl font-black text-pink-600 dark:text-pink-400">
           ₾{totalPrice().toFixed(2)}
         </span>
       </div>
@@ -102,7 +113,7 @@ function CartSummary() {
   )
 }
 
-// ─── Input Component ──────────────────────────────────────────────────────────
+// ─── Form Input ───────────────────────────────────────────────────────────────
 
 function FormInput({
   label, name, type = 'text', required = false,
@@ -114,7 +125,7 @@ function FormInput({
 }) {
   return (
     <div>
-      <label className="mb-1.5 block text-sm font-semibold text-gray-700 dark:text-gray-300">
+      <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
         {label} {required && <span className="text-pink-500">*</span>}
       </label>
       <div className="relative">
@@ -126,7 +137,7 @@ function FormInput({
           placeholder={placeholder}
           value={value}
           onChange={onChange}
-          className="w-full rounded-2xl border border-gray-200 bg-white/80 py-3 pl-10 pr-4 text-sm text-gray-900 placeholder-gray-400 backdrop-blur-sm transition-all focus:border-pink-400 focus:outline-none focus:ring-2 focus:ring-pink-200 dark:border-gray-700 dark:bg-gray-800/80 dark:text-white dark:placeholder-gray-500 dark:focus:border-pink-500 dark:focus:ring-pink-900/30"
+          className="w-full rounded-2xl border border-gray-200 bg-white/80 py-2.5 pl-10 pr-4 text-sm text-gray-900 placeholder-gray-400 transition-all focus:border-pink-400 focus:outline-none focus:ring-2 focus:ring-pink-200 dark:border-gray-700 dark:bg-gray-800/80 dark:text-white dark:placeholder-gray-500 dark:focus:border-pink-500 dark:focus:ring-pink-900/30"
         />
       </div>
     </div>
@@ -135,7 +146,7 @@ function FormInput({
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-export default function CheckoutPage() {
+export default function CheckoutClient() {
   const { t } = useLang()
   const { items, totalPrice, clearCart } = useCartStore()
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -145,11 +156,7 @@ export default function CheckoutPage() {
   const [error, setError] = useState<string | null>(null)
 
   const [form, setForm] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    address: '',
-    notes: '',
+    name: '', email: '', phone: '', address: '', notes: '',
   })
 
   const update = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
@@ -165,20 +172,14 @@ export default function CheckoutPage() {
     setError(null)
 
     try {
-      // 1. Submit to Formspree, casting to 'any' to bypass the strict 'void' TypeScript definition
       const result = (await submitToFormspree({
         ...form,
         items: items.map((i) => `${i.name} x${i.quantity}`).join(', '),
         total: `₾${totalPrice().toFixed(2)}`,
       })) as any
 
-      // 2. Safely check for submission errors. 
-      // Using optional chaining (?.) ensures it won't crash if the result is genuinely undefined
-      if (result?.errors) {
-        throw new Error('Formspree submission failed')
-      }
+      if (result?.errors) throw new Error('Formspree submission failed')
 
-      // 3. Submit to Supabase (database record)
       const { error: dbError } = await insertOrder({
         customer_name: form.name,
         customer_email: form.email,
@@ -186,22 +187,16 @@ export default function CheckoutPage() {
         delivery_address: form.address || null,
         notes: form.notes || null,
         items: items.map((i) => ({
-          id: i.id,
-          name: i.name,
-          price: i.price,
-          quantity: i.quantity,
+          id: i.id, name: i.name, price: i.price, quantity: i.quantity,
         })),
         total_amount: totalPrice(),
       })
 
-      if (dbError) {
-        console.error('Supabase error:', dbError)
-        // Opting to continue since email notification went through safely
-      }
+      if (dbError) console.error('Supabase error:', dbError)
 
       clearCart()
       setSuccess(true)
-    } catch (err) {
+    } catch {
       setError(t(
         'Something went wrong. Please try again or call us directly.',
         'შეცდომა დაფიქსირდა. სცადე ხელახლა ან დაგვიკავშირდი პირდაპირ.'
@@ -211,15 +206,16 @@ export default function CheckoutPage() {
     }
   }
 
-  // ── Success state ──
+  // ── Success ───────────────────────────────────────────────────────────────
+
   if (success) {
     return (
       <div className="flex min-h-screen items-center justify-center px-4 pt-20">
         <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
+          initial={{ opacity: 0, scale: 0.85 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-          className="card max-w-md w-full text-center"
+          className="card w-full max-w-md text-center"
         >
           <motion.div
             initial={{ scale: 0 }}
@@ -232,13 +228,13 @@ export default function CheckoutPage() {
           <h2 className="font-display text-3xl font-black text-gray-900 dark:text-white">
             {t('Order Placed! 🎉', 'შეკვეთა მიღებულია! 🎉')}
           </h2>
-          <p className="mt-3 text-gray-600 dark:text-gray-400">
+          <p className="mt-3 text-sm text-gray-600 dark:text-gray-400">
             {t(
               "Thank you! We'll contact you shortly to confirm your order and arrange delivery.",
               'გმადლობთ! მალე დაგიკავშირდებით შეკვეთის დასადასტურებლად.'
             )}
           </p>
-          <div className="mt-6 rounded-2xl bg-amber-50 p-4 text-sm text-amber-700 dark:bg-amber-900/20 dark:text-amber-400">
+          <div className="mt-5 rounded-2xl bg-amber-50 px-4 py-3 text-sm text-amber-700 dark:bg-amber-900/20 dark:text-amber-400">
             📞 {t('Or call us at', 'ან დაგვირეკე')} <strong>+995 599 02 17 44</strong>
           </div>
           <a href="/shop" className="btn-primary mt-6 inline-flex">
@@ -249,11 +245,14 @@ export default function CheckoutPage() {
     )
   }
 
+  // ── Main ──────────────────────────────────────────────────────────────────
+
   return (
-    <div className="mx-auto max-w-6xl px-4 pt-28 pb-20 sm:px-6 lg:px-8">
+    <div className="mx-auto max-w-5xl px-4 pb-20 pt-28 sm:px-6 lg:px-8">
+
       {/* Header */}
       <motion.div
-        initial={{ opacity: 0, y: 30 }}
+        initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         className="mb-10 text-center"
       >
@@ -262,144 +261,147 @@ export default function CheckoutPage() {
           {t('Place Your Order', 'შეკვეთის განთავსება')}
         </span>
         <h1 className="section-heading">{t('Checkout', 'გადახდა')}</h1>
-        <p className="mt-2 text-gray-600 dark:text-gray-400">
+        <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
           {t("Fill in your details and we'll take care of the rest", 'შეავსე დეტალები — დანარჩენს ჩვენ ვიზრუნებთ')}
         </p>
       </motion.div>
 
-      <div className="grid gap-8 lg:grid-cols-[1fr_400px]">
-        {/* Form */}
-        <motion.div
-          initial={{ opacity: 0, x: -30 }}
+      <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
+
+        {/* ── Form ── */}
+        <motion.form
+          onSubmit={handleSubmit}
+          initial={{ opacity: 0, x: -24 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.1 }}
+          className="card space-y-4"
         >
-          <form onSubmit={handleSubmit} className="card space-y-5">
-            <h2 className="font-display text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-pink-500" />
-              {t('Your Details', 'თქვენი დეტალები')}
-            </h2>
+          <h2 className="flex items-center gap-2 font-display text-lg font-bold text-gray-900 dark:text-white">
+            <Sparkles className="h-5 w-5 text-pink-500" />
+            {t('Your Details', 'თქვენი დეტალები')}
+          </h2>
 
-            <FormInput
-              label={t('Full Name', 'სახელი და გვარი')}
-              name="name" required icon={User}
-              placeholder={t('e.g. Tamara Beridze', 'მაგ. თამარ ბერიძე')}
-              value={form.name} onChange={update}
-            />
-            <FormInput
-              label={t('Email Address', 'ელ-ფოსტა')}
-              name="email" type="email" required icon={Mail}
-              placeholder="email@example.com"
-              value={form.email} onChange={update}
-            />
-            <FormInput
-              label={t('Phone Number', 'ტელეფონის ნომერი')}
-              name="phone" type="tel" icon={Phone}
-              placeholder="+995 5XX XX XX XX"
-              value={form.phone} onChange={update}
-            />
-            <FormInput
-              label={t('Delivery Address', 'მიწოდების მისამართი')}
-              name="address" icon={MapPin}
-              placeholder={t('Street, district, Tbilisi', 'ქუჩა, უბანი, თბილისი')}
-              value={form.address} onChange={update}
-            />
+          <FormInput
+            label={t('Full Name', 'სახელი და გვარი')}
+            name="name" required icon={User}
+            placeholder={t('e.g. Tamara Beridze', 'მაგ. თამარ ბერიძე')}
+            value={form.name} onChange={update}
+          />
+          <FormInput
+            label={t('Email Address', 'ელ-ფოსტა')}
+            name="email" type="email" required icon={Mail}
+            placeholder="email@example.com"
+            value={form.email} onChange={update}
+          />
+          <FormInput
+            label={t('Phone Number', 'ტელეფონის ნომერი')}
+            name="phone" type="tel" icon={Phone}
+            placeholder="+995 5XX XX XX XX"
+            value={form.phone} onChange={update}
+          />
+          <FormInput
+            label={t('Delivery Address', 'მიწოდების მისამართი')}
+            name="address" icon={MapPin}
+            placeholder={t('Street, district, Tbilisi', 'ქუჩა, უბანი, თბილისი')}
+            value={form.address} onChange={update}
+          />
 
-            {/* Notes */}
-            <div>
-              <label className="mb-1.5 block text-sm font-semibold text-gray-700 dark:text-gray-300">
-                {t('Notes / Special Requests', 'შენიშვნები')}
-              </label>
-              <div className="relative">
-                <MessageSquare className="absolute left-3.5 top-3.5 h-4 w-4 text-gray-400" />
-                <textarea
-                  name="notes"
-                  rows={3}
-                  placeholder={t(
-                    'Gift wrapping, specific colors, delivery time...',
-                    'საჩუქრის შეფუთვა, კონკრეტული ფერები, მიწოდების დრო...'
-                  )}
-                  value={form.notes}
-                  onChange={update}
-                  className="w-full resize-none rounded-2xl border border-gray-200 bg-white/80 py-3 pl-10 pr-4 text-sm text-gray-900 placeholder-gray-400 transition-all focus:border-pink-400 focus:outline-none focus:ring-2 focus:ring-pink-200 dark:border-gray-700 dark:bg-gray-800/80 dark:text-white dark:placeholder-gray-500 dark:focus:border-pink-500 dark:focus:ring-pink-900/30"
-                />
-              </div>
+          {/* Notes */}
+          <div>
+            <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+              {t('Notes / Special Requests', 'შენიშვნები')}
+            </label>
+            <div className="relative">
+              <MessageSquare className="absolute left-3.5 top-3.5 h-4 w-4 text-gray-400" />
+              <textarea
+                name="notes"
+                rows={3}
+                placeholder={t(
+                  'Gift wrapping, specific colors, delivery time...',
+                  'საჩუქრის შეფუთვა, კონკრეტული ფერები, მიწოდების დრო...'
+                )}
+                value={form.notes}
+                onChange={update}
+                className="w-full resize-none rounded-2xl border border-gray-200 bg-white/80 py-2.5 pl-10 pr-4 text-sm text-gray-900 placeholder-gray-400 transition-all focus:border-pink-400 focus:outline-none focus:ring-2 focus:ring-pink-200 dark:border-gray-700 dark:bg-gray-800/80 dark:text-white dark:placeholder-gray-500 dark:focus:border-pink-500 dark:focus:ring-pink-900/30"
+              />
             </div>
+          </div>
 
-            {/* Error */}
-            <AnimatePresence>
-              {error && (
-                <motion.p
-                  initial={{ opacity: 0, y: -8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0 }}
-                  className="rounded-2xl bg-rose-50 px-4 py-3 text-sm text-rose-600 dark:bg-rose-900/20 dark:text-rose-400"
-                >
-                  {error}
-                </motion.p>
-              )}
-            </AnimatePresence>
+          {/* Error */}
+          <AnimatePresence>
+            {error && (
+              <motion.p
+                initial={{ opacity: 0, y: -6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className="rounded-2xl bg-rose-50 px-4 py-3 text-sm text-rose-600 dark:bg-rose-900/20 dark:text-rose-400"
+              >
+                {error}
+              </motion.p>
+            )}
+          </AnimatePresence>
 
-            {/* Submit */}
-            <motion.button
-              type="submit"
-              disabled={submitting}
-              whileHover={{ scale: submitting ? 1 : 1.01 }}
-              whileTap={{ scale: 0.98 }}
-              className="btn-primary w-full justify-center py-4 text-base disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {submitting ? (
-                <>
-                  <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{ repeat: Infinity, duration: 0.8, ease: 'linear' }}
-                    className="h-5 w-5 rounded-full border-2 border-white/30 border-t-white"
-                  />
-                  {t('Sending...', 'იგზავნება...')}
-                </>
-              ) : (
-                <>
-                  <Send className="h-5 w-5" />
-                  {t('Place Order', 'შეკვეთის განთავსება')}
-                </>
-              )}
-            </motion.button>
+          {/* Submit */}
+          <motion.button
+            type="submit"
+            disabled={submitting}
+            whileHover={{ scale: submitting ? 1 : 1.01 }}
+            whileTap={{ scale: 0.98 }}
+            className="btn-primary w-full justify-center py-3.5 text-base disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {submitting ? (
+              <>
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ repeat: Infinity, duration: 0.8, ease: 'linear' }}
+                  className="h-5 w-5 rounded-full border-2 border-white/30 border-t-white"
+                />
+                {t('Sending...', 'იგზავნება...')}
+              </>
+            ) : (
+              <>
+                <Send className="h-4 w-4" />
+                {t('Place Order', 'შეკვეთის განთავსება')}
+              </>
+            )}
+          </motion.button>
 
-            <p className="text-center text-xs text-gray-400 dark:text-gray-600">
-              {t(
-                'By submitting you agree to be contacted by our team.',
-                'გაგზავნით ეთანხმები ჩვენი გუნდის მიერ დაკავშირებას.'
-              )}
-            </p>
-          </form>
-        </motion.div>
+          <p className="text-center text-xs text-gray-400 dark:text-gray-600">
+            {t(
+              'By submitting you agree to be contacted by our team.',
+              'გაგზავნით ეთანხმები ჩვენი გუნდის მიერ დაკავშირებას.'
+            )}
+          </p>
+        </motion.form>
 
-        {/* Cart Summary */}
+        {/* ── Sidebar ── */}
         <motion.div
-          initial={{ opacity: 0, x: 30 }}
+          initial={{ opacity: 0, x: 24 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.15 }}
+          className="flex flex-col gap-4"
         >
           <CartSummary />
 
-          {/* Info box */}
-          <div className="mt-4 card bg-gradient-to-br from-fuchsia-50 to-pink-50 dark:from-fuchsia-900/20 dark:to-pink-900/20">
-            <h3 className="font-semibold text-gray-900 dark:text-white text-sm mb-3">
+          {/* Perks */}
+          <div className="card space-y-2.5 bg-gradient-to-br from-fuchsia-50 to-pink-50 dark:from-fuchsia-900/20 dark:to-pink-900/20">
+            <h3 className="text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">
               {t('Why order with us?', 'რატომ ჩვენ?')}
             </h3>
             {[
-              { icon: '🏪', en: 'In-store pick-up available', ge: 'მაღაზიიდან გატანა შესაძლებელია' },
-              { icon: '🚚', en: 'Fast Tbilisi delivery', ge: 'სწრაფი მიწოდება თბილისში' },
-              { icon: '🎁', en: 'Free gift wrapping', ge: 'უფასო საჩუქრის შეფუთვა' },
-              { icon: '📞', en: 'Personal support: +995 599 02 17 44', ge: 'პირდაპირი კავშირი: +995 599 02 17 44' },
+              { icon: '🏪', en: 'In-store pick-up available',          ge: 'მაღაზიიდან გატანა შესაძლებელია' },
+              { icon: '🚚', en: 'Fast Tbilisi delivery',               ge: 'სწრაფი მიწოდება თბილისში' },
+              { icon: '🎁', en: 'Free gift wrapping',                  ge: 'უფასო საჩუქრის შეფუთვა' },
+              { icon: '📞', en: 'Support: +995 599 02 17 44',          ge: 'კავშირი: +995 599 02 17 44' },
             ].map((item) => (
-              <div key={item.en} className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 mb-2">
-                <span>{item.icon}</span>
+              <div key={item.en} className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
+                <span className="text-base">{item.icon}</span>
                 <span>{t(item.en, item.ge)}</span>
               </div>
             ))}
           </div>
         </motion.div>
+
       </div>
     </div>
   )

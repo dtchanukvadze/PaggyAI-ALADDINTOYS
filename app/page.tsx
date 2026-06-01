@@ -135,7 +135,7 @@ export default function HomePage() {
               )}
             </motion.p>
 
-            <motion.div variants={fadeUp} className="mt-10 flex flex-wrap gap-4 justify-center lg:justify-start">
+            <motion.div variants={fadeUp} className="mt-10 pb-15 flex flex-wrap gap-4 justify-center lg:justify-start">
               <Link href="/shop" className="btn-primary py-4 px-8 text-lg">
                 <ShoppingBag className="h-5 w-5" />
                 {t('Shop Collection', 'კოლექციის ნახვა')}
