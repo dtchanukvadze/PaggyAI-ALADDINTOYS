@@ -1,313 +1,178 @@
 'use client'
 
-import { motion, useInView } from 'framer-motion'
-import { useRef, useState } from 'react'
-import { ShoppingCart, Check, Star, Filter, Sparkles } from 'lucide-react'
+/**
+ * ─────────────────────────────────────────────────────────────────────────────
+ *  shop/page.tsx  —  Dynamic product shop, data fetched from Supabase
+ * ─────────────────────────────────────────────────────────────────────────────
+ *
+ *  SUPABASE CONTRACT
+ *  The page reads from the `products` table created in the previous step.
+ *  Expected columns used here:
+ *    id          uuid
+ *    name        text
+ *    description text | null
+ *    price       numeric
+ *    category    text | null
+ *    image_url   text | null    ← URL  OR  a single emoji character
+ *    in_stock    boolean
+ *    metadata    jsonb          ← optional shape: { badge?: string, badgeGe?: string,
+ *                                                    nameGe?: string, descriptionGe?: string,
+ *                                                    gradient?: string, rating?: number,
+ *                                                    reviews?: number }
+ *
+ *  All metadata fields are OPTIONAL — the card degrades gracefully when absent.
+ * ─────────────────────────────────────────────────────────────────────────────
+ */
+
+import { motion, AnimatePresence, useInView } from 'framer-motion'
+import { useRef, useState, useEffect, useCallback } from 'react'
+import {
+  ShoppingCart, Check, Star, Filter, Sparkles,
+  PackageSearch, RefreshCw, AlertCircle,
+} from 'lucide-react'
+import { supabase } from '@/lib/supabase'
 import { useCartStore, useLang } from '@/components/CartProvider'
 
-// ─── Product Data ─────────────────────────────────────────────────────────────
+// ─── Types ────────────────────────────────────────────────────────────────────
 
-const products = [
-  {
-    id: 'prod-1',
-    name: 'LEGO Classic Bricks Set',
-    nameGe: 'LEGO კლასიკური კუბიკების ნაკრები',
-    category: 'building',
-    price: 89.99,
-    rating: 5,
-    reviews: 128,
-    badge: 'Bestseller',
-    badgeGe: 'ბესტსელერი',
-    description: 'Creative building set with 1000+ classic bricks in vibrant colors.',
-    descriptionGe: '1000+ კუბიკი ნათელ ფერებში — შემოქმედებისთვის.',
-    image: '🧱',
-    gradient: 'from-orange-400 to-amber-500',
-  },
-  {
-    id: 'prod-2',
-    name: 'Magic Princess Castle',
-    nameGe: 'ჯადოსნური პრინცესას სასახლე',
-    category: 'dolls',
-    price: 124.99,
-    rating: 5,
-    reviews: 86,
-    badge: 'New',
-    badgeGe: 'სიახლე',
-    description: 'A magical 3-story castle with lights, sounds, and 5 princess figures.',
-    descriptionGe: '3-სართულიანი სასახლე შუქებით, ხმებით და 5 პრინცესას ფიგურით.',
-    image: '🏰',
-    gradient: 'from-fuchsia-400 to-pink-500',
-  },
-  {
-    id: 'prod-3',
-    name: 'RC Racing Car Pro',
-    nameGe: 'RC სარბოლო მანქანა Pro',
-    category: 'vehicles',
-    price: 64.99,
-    rating: 4,
-    reviews: 52,
-    badge: 'Popular',
-    badgeGe: 'პოპულარული',
-    description: 'High-speed remote-control racing car with 2.4GHz control and LED lights.',
-    descriptionGe: '2.4GHz სიჩქარის RC მანქანა LED შუქებით.',
-    image: '🚗',
-    gradient: 'from-red-400 to-rose-500',
-  },
-  {
-    id: 'prod-4',
-    name: 'Science Discovery Kit',
-    nameGe: 'მეცნიერების აღმოჩენების ნაკრები',
-    category: 'educational',
-    price: 49.99,
-    rating: 5,
-    reviews: 74,
-    badge: 'Educational',
-    badgeGe: 'სასწავლო',
-    description: '50+ experiments in chemistry, physics, and biology for curious minds.',
-    descriptionGe: '50+ ექსპერიმენტი ქიმიაში, ფიზიკასა და ბიოლოგიაში.',
-    image: '🔬',
-    gradient: 'from-emerald-400 to-teal-500',
-  },
-  {
-    id: 'prod-5',
-    name: 'Wooden Puzzle World Map',
-    nameGe: 'ხის პაზლი — მსოფლიო რუკა',
-    category: 'educational',
-    price: 34.99,
-    rating: 5,
-    reviews: 61,
-    badge: 'Eco-Friendly',
-    badgeGe: 'ეკო',
-    description: 'Hand-crafted wooden world map puzzle with country names and capitals.',
-    descriptionGe: 'ხელნაკეთი ხის მსოფლიო რუკა ქვეყნების სახელებით.',
-    image: '🌍',
-    gradient: 'from-sky-400 to-blue-500',
-  },
-  {
-    id: 'prod-6',
-    name: 'Plush Unicorn XL',
-    nameGe: 'პლუშის უნიკორნი XL',
-    category: 'plush',
-    price: 29.99,
-    rating: 5,
-    reviews: 203,
-    badge: 'Fan Favorite',
-    badgeGe: 'საყვარელი',
-    description: 'Super-soft giant unicorn plush toy with rainbow mane, 60cm tall.',
-    descriptionGe: 'სუპერ რბილი უნიკორნი ცისარტყელა ფაფარით, 60სმ.',
-    image: '🦄',
-    gradient: 'from-violet-400 to-purple-500',
-  },
-  {
-    id: 'prod-7',
-    name: 'Monopoly Family Edition',
-    nameGe: 'მონოპოლია — საოჯახო გამოცემა',
-    category: 'games',
-    price: 39.99,
-    rating: 4,
-    reviews: 312,
-    badge: 'Classic',
-    badgeGe: 'კლასიკა',
-    description: 'The classic real estate trading board game for the whole family.',
-    descriptionGe: 'კლასიკური სამაგიდო თამაში მთელი ოჯახისთვის.',
-    image: '🎲',
-    gradient: 'from-blue-500 to-indigo-600',
-  },
-  {
-    id: 'prod-8',
-    name: 'Galaxy Guardian Action Figure',
-    nameGe: 'გალაქტიკის მცველის ფიგურა',
-    category: 'action-figures',
-    price: 24.99,
-    rating: 4,
-    reviews: 89,
-    badge: 'Trending',
-    badgeGe: 'ტრენდული',
-    description: 'Fully articulated superhero action figure with glowing accessories.',
-    descriptionGe: 'მოძრავი სუპერგმირის ფიგურა მანათობელი აქსესუარებით.',
-    image: '🦸‍♂️',
-    gradient: 'from-cyan-400 to-blue-500',
-  },
-  {
-    id: 'prod-9',
-    name: 'Magnetic Building Tiles (100pc)',
-    nameGe: 'მაგნიტური კონსტრუქტორი (100 ნაწილი)',
-    category: 'building',
-    price: 54.99,
-    rating: 5,
-    reviews: 415,
-    badge: 'Award Winner',
-    badgeGe: 'ჯილდოს მფლობელი',
-    description: 'Colorful 3D magnetic building blocks that inspire creativity and logic.',
-    descriptionGe: 'ფერადი 3D მაგნიტური კონსტრუქტორი ლოგიკისა და კრეატივისთვის.',
-    image: '🧲',
-    gradient: 'from-yellow-400 to-orange-500',
-  },
-  {
-    id: 'prod-10',
-    name: 'Glamour Fashion Doll',
-    nameGe: 'მოდური თოჯინა აქსესუარებით',
-    category: 'dolls',
-    price: 32.99,
-    rating: 4,
-    reviews: 156,
-    badge: 'Popular',
-    badgeGe: 'პოპულარული',
-    description: 'Includes 10 outfit changes, stylish shoes, and a portable wardrobe.',
-    descriptionGe: 'მოყვება 10 ტანსაცმელი, ფეხსაცმელი და პორტატული კარადა.',
-    image: '👗',
-    gradient: 'from-pink-300 to-rose-400',
-  },
-  {
-    id: 'prod-11',
-    name: 'Classic Wooden Train Track',
-    nameGe: 'კლასიკური ხის მატარებელი',
-    category: 'vehicles',
-    price: 79.99,
-    rating: 5,
-    reviews: 210,
-    badge: 'Bestseller',
-    badgeGe: 'ბესტსელერი',
-    description: '50-piece traditional wooden railway set with bridges and stations.',
-    descriptionGe: '50-ნაწილიანი ტრადიციული ხის რკინიგზა ხიდებითა და სადგურით.',
-    image: '🚂',
-    gradient: 'from-amber-600 to-orange-700',
-  },
-  {
-    id: 'prod-12',
-    name: 'DIY Solar System Model',
-    nameGe: 'მზის სისტემის მოდელი',
-    category: 'educational',
-    price: 22.99,
-    rating: 4,
-    reviews: 94,
-    badge: 'STEM',
-    badgeGe: 'STEM',
-    description: 'Paint and assemble your own glowing planetarium model of the solar system.',
-    descriptionGe: 'ააწყვე და გააფერადე მანათობელი მზის სისტემის მოდელი.',
-    image: '🪐',
-    gradient: 'from-indigo-800 to-purple-900',
-  },
-  {
-    id: 'prod-13',
-    name: 'Giant Teddy Bear (120cm)',
-    nameGe: 'გიგანტური დათუნია (120სმ)',
-    category: 'plush',
-    price: 99.99,
-    rating: 5,
-    reviews: 342,
-    badge: 'Gift Idea',
-    badgeGe: 'საჩუქარი',
-    description: 'Ultra-huggable, premium quality giant teddy bear. The perfect gift.',
-    descriptionGe: 'უმაღლესი ხარისხის, გიგანტური პლუშის დათუნია. საუკეთესო საჩუქარი.',
-    image: '🧸',
-    gradient: 'from-amber-300 to-yellow-600',
-  },
-  {
-    id: 'prod-14',
-    name: 'Premium Wooden Chess Set',
-    nameGe: 'პრემიუმ ხის ჭადრაკი',
-    category: 'games',
-    price: 45.99,
-    rating: 5,
-    reviews: 112,
-    badge: 'Classic',
-    badgeGe: 'კლასიკა',
-    description: 'Hand-carved wooden chess and checkers set with a folding storage board.',
-    descriptionGe: 'ხელით გამოთლილი ხის ჭადრაკი და შაში დასაკეცი დაფით.',
-    image: '♟️',
-    gradient: 'from-stone-600 to-stone-800',
-  },
-  {
-    id: 'prod-15',
-    name: 'Interactive Roaring T-Rex',
-    nameGe: 'ინტერაქტიული დინოზავრი T-Rex',
-    category: 'action-figures',
-    price: 39.99,
-    rating: 4,
-    reviews: 205,
-    badge: 'New',
-    badgeGe: 'სიახლე',
-    description: 'Walking, roaring T-Rex dinosaur with realistic sounds and glowing eyes.',
-    descriptionGe: 'მოძრავი დინოზავრი რეალისტური ხმებით და მანათობელი თვალებით.',
-    image: '🦖',
-    gradient: 'from-lime-500 to-emerald-600',
-  },
-  {
-    id: 'prod-16',
-    name: 'Space Explorer Building Kit',
-    nameGe: 'კოსმოსური სადგურის კონსტრუქტორი',
-    category: 'building',
-    price: 109.99,
-    rating: 5,
-    reviews: 67,
-    badge: 'Premium',
-    badgeGe: 'პრემიუმი',
-    description: 'Highly detailed 800+ piece space station model with astronaut mini-figures.',
-    descriptionGe: 'დეტალური 800+ ნაწილიანი კოსმოსური სადგური ასტრონავტებით.',
-    image: '🚀',
-    gradient: 'from-slate-700 to-slate-900',
-  },
-  {
-    id: 'prod-17',
-    name: 'Interactive Baby Doll & Stroller',
-    nameGe: 'ჩვილი თოჯინა და ეტლი',
-    category: 'dolls',
-    price: 59.99,
-    rating: 4,
-    reviews: 124,
-    badge: 'Bundle',
-    badgeGe: 'ნაკრები',
-    description: 'Lifelike baby doll that cries and laughs, includes a fully foldable stroller.',
-    descriptionGe: 'რეალისტური ჩვილი, რომელიც ტირის და იცინის, დასაკეცი ეტლით.',
-    image: '🍼',
-    gradient: 'from-rose-200 to-pink-300',
-  },
-  {
-    id: 'prod-18',
-    name: 'Mini Quadcopter Drone',
-    nameGe: 'მინი დრონი კვადროკოპტერი',
-    category: 'vehicles',
-    price: 89.99,
-    rating: 4,
-    reviews: 178,
-    badge: 'Tech',
-    badgeGe: 'ტექნიკა',
-    description: 'Beginner-friendly mini drone with an HD camera, auto-hover, and flips.',
-    descriptionGe: 'მარტივად მართვადი მინი დრონი HD კამერით და ავტომატური ბალანსით.',
-    image: '🚁',
-    gradient: 'from-zinc-400 to-zinc-600',
+interface ProductMeta {
+  badge?:        string
+  badgeGe?:      string
+  nameGe?:       string
+  descriptionGe?: string
+  gradient?:     string
+  rating?:       number   // 1-5
+  reviews?:      number
+}
+
+export interface DbProduct {
+  id:          string
+  name:        string
+  description: string | null
+  price:       number
+  category:    string | null
+  image_url:   string | null
+  in_stock:    boolean
+  metadata:    ProductMeta
+}
+
+// ─── Supabase fetch ───────────────────────────────────────────────────────────
+
+async function loadProducts(): Promise<{ data: DbProduct[]; error: string | null }> {
+  const { data, error } = await supabase
+    .from('products')
+    .select('id, name, description, price, category, image_url, in_stock, metadata')
+    .order('created_at', { ascending: false })
+
+  if (error) return { data: [], error: error.message }
+  return { data: (data ?? []) as DbProduct[], error: null }
+}
+
+// ─── Derived category list from live data ─────────────────────────────────────
+
+function buildCategories(products: DbProduct[], t: (en: string, ge: string) => string) {
+  const seen = new Set<string>()
+  const cats: { id: string; label: string }[] = [
+    { id: 'all', label: t('All', 'ყველა') },
+  ]
+  products.forEach((p) => {
+    if (p.category && !seen.has(p.category)) {
+      seen.add(p.category)
+      cats.push({ id: p.category, label: p.category })
+    }
+  })
+  return cats
+}
+
+// ─── Gradient palette — assigned by index when no gradient in metadata ─────────
+
+const GRADIENT_PALETTE = [
+  'from-orange-400 to-amber-500',
+  'from-fuchsia-400 to-pink-500',
+  'from-red-400 to-rose-500',
+  'from-emerald-400 to-teal-500',
+  'from-sky-400 to-blue-500',
+  'from-violet-400 to-purple-500',
+  'from-blue-500 to-indigo-600',
+  'from-cyan-400 to-blue-500',
+  'from-yellow-400 to-orange-500',
+  'from-pink-300 to-rose-400',
+  'from-amber-600 to-orange-700',
+  'from-indigo-800 to-purple-900',
+]
+
+function gradientFor(product: DbProduct, index: number): string {
+  return product.metadata?.gradient ?? GRADIENT_PALETTE[index % GRADIENT_PALETTE.length]
+}
+
+// ─── Skeleton card ────────────────────────────────────────────────────────────
+
+function SkeletonCard() {
+  return (
+    <div className="card flex flex-col overflow-hidden animate-pulse">
+      <div className="mb-4 h-44 rounded-2xl bg-gray-200 dark:bg-gray-700" />
+      <div className="h-5 w-3/4 rounded-lg bg-gray-200 dark:bg-gray-700" />
+      <div className="mt-2 h-4 w-full rounded-lg bg-gray-100 dark:bg-gray-800" />
+      <div className="mt-1 h-4 w-2/3 rounded-lg bg-gray-100 dark:bg-gray-800" />
+      <div className="mt-4 flex items-center justify-between">
+        <div className="h-7 w-16 rounded-lg bg-gray-200 dark:bg-gray-700" />
+        <div className="h-9 w-24 rounded-xl bg-gray-200 dark:bg-gray-700" />
+      </div>
+    </div>
+  )
+}
+
+// ─── Image renderer — URL or emoji fallback ───────────────────────────────────
+
+function ProductImage({ src, name, gradient }: { src: string | null; name: string; gradient: string }) {
+  const [failed, setFailed] = useState(false)
+
+  // Detect single emoji / short non-URL strings as emoji display
+  const isEmoji = src && src.length <= 4 && !src.startsWith('http')
+
+  if (!src || failed || isEmoji) {
+    return (
+      <div className={`flex h-full w-full items-center justify-center rounded-2xl bg-gradient-to-br ${gradient} text-7xl shadow-inner`}>
+        {isEmoji ? src : '🎁'}
+      </div>
+    )
   }
-]
 
-// 🟢 Added 'Games' and 'Action Figures' to the filter list
-const categories = [
-  { id: 'all', label: 'All', labelGe: 'ყველა' },
-  { id: 'building', label: 'Building', labelGe: 'კუბიკები' },
-  { id: 'dolls', label: 'Dolls', labelGe: 'თოჯინები' },
-  { id: 'vehicles', label: 'Vehicles', labelGe: 'მანქანები' },
-  { id: 'educational', label: 'Educational', labelGe: 'სასწავლო' },
-  { id: 'plush', label: 'Plush', labelGe: 'პლუში' },
-  { id: 'games', label: 'Games', labelGe: 'თამაშები' },
-  { id: 'action-figures', label: 'Figures', labelGe: 'ფიგურები' },
-]
+  return (
+    <img
+      src={src}
+      alt={name}
+      className="h-full w-full rounded-2xl object-cover"
+      onError={() => setFailed(true)}
+    />
+  )
+}
 
 // ─── Product Card ─────────────────────────────────────────────────────────────
 
-function ProductCard({ product, index }: { product: typeof products[0]; index: number }) {
+function ProductCard({ product, index }: { product: DbProduct; index: number }) {
   const { t } = useLang()
-  const addItem = useCartStore((s) => s.addItem)
+  const addItem   = useCartStore((s) => s.addItem)
   const [added, setAdded] = useState(false)
-  const ref = useRef(null)
+  const ref    = useRef(null)
   const inView = useInView(ref, { once: true, margin: '-40px' })
+
+  const meta     = product.metadata ?? {}
+  const gradient = gradientFor(product, index)
+  const rating   = meta.rating  ?? 5
+  const reviews  = meta.reviews ?? 0
+  const badge    = meta.badge   ?? null
+
+  const displayName = t(product.name, meta.nameGe ?? product.name)
+  const displayDesc = t(product.description ?? '', meta.descriptionGe ?? product.description ?? '')
 
   const handleAdd = () => {
     addItem({
-      id: product.id,
-      name: product.name,
-      nameGe: product.nameGe,
-      price: product.price,
-      image: product.image,
+      id:     product.id,
+      name:   product.name,
+      nameGe: meta.nameGe ?? product.name,
+      price:  product.price,
+      image:  product.image_url ?? '🎁',
     })
     setAdded(true)
     setTimeout(() => setAdded(false), 2000)
@@ -318,73 +183,87 @@ function ProductCard({ product, index }: { product: typeof products[0]; index: n
       ref={ref}
       initial={{ opacity: 0, y: 40 }}
       animate={inView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.5, delay: (index % 10) * 0.08 }} // 🟢 Modulo prevents huge delays on lower rows
+      transition={{ duration: 0.5, delay: (index % 10) * 0.07 }}
       whileHover={{ y: -6 }}
-      className="card group flex flex-col overflow-hidden"
+      className="card group relative flex flex-col overflow-hidden"
     >
-      {/* Product image area */}
-      <div
-        className={`relative mb-4 flex h-44 items-center justify-center rounded-2xl bg-gradient-to-br ${product.gradient} text-7xl shadow-inner`}
-      >
-        {product.image}
-        {/* Badge */}
-        <span className="absolute right-3 top-3 rounded-full bg-white/90 px-2.5 py-1 text-xs font-bold text-gray-800 shadow">
-          {t(product.badge, product.badgeGe)}
-        </span>
+      {/* Out-of-stock overlay */}
+      {!product.in_stock && (
+        <div className="absolute inset-0 z-10 flex items-center justify-center rounded-[inherit] bg-white/60 backdrop-blur-[2px] dark:bg-gray-900/60">
+          <span className="rounded-full bg-gray-800/80 px-3 py-1 text-xs font-bold tracking-widest text-white dark:bg-white/20">
+            {t('OUT OF STOCK', 'არ არის მარაგში')}
+          </span>
+        </div>
+      )}
+
+      {/* Image area */}
+      <div className="relative mb-4 h-44 overflow-hidden rounded-2xl">
+        <ProductImage src={product.image_url} name={product.name} gradient={gradient} />
+        {badge && (
+          <span className="absolute right-3 top-3 rounded-full bg-white/90 px-2.5 py-1 text-xs font-bold text-gray-800 shadow">
+            {t(badge, meta.badgeGe ?? badge)}
+          </span>
+        )}
       </div>
 
       {/* Info */}
       <div className="flex flex-1 flex-col">
-        <h3 className="font-display text-lg font-bold text-gray-900 dark:text-white leading-snug">
-          {t(product.name, product.nameGe)}
+        <h3 className="font-display text-lg font-bold leading-snug text-gray-900 dark:text-white">
+          {displayName}
         </h3>
-        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
-          {t(product.description, product.descriptionGe)}
-        </p>
 
-        {/* Rating */}
-        <div className="mt-3 flex items-center gap-1.5">
-          <div className="flex">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <Star
-                key={i}
-                className={`h-3.5 w-3.5 ${
-                  i < product.rating
-                    ? 'fill-amber-400 text-amber-400'
-                    : 'text-gray-200 dark:text-gray-700'
-                }`}
-              />
-            ))}
+        {displayDesc && (
+          <p className="mt-1 line-clamp-2 text-sm leading-relaxed text-gray-500 dark:text-gray-400">
+            {displayDesc}
+          </p>
+        )}
+
+        {/* Category chip */}
+        {product.category && (
+          <span className="mt-2 w-fit rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-semibold capitalize text-gray-500 dark:bg-gray-800 dark:text-gray-400">
+            {product.category}
+          </span>
+        )}
+
+        {/* Stars */}
+        {reviews > 0 && (
+          <div className="mt-3 flex items-center gap-1.5">
+            <div className="flex">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Star
+                  key={i}
+                  className={`h-3.5 w-3.5 ${
+                    i < rating
+                      ? 'fill-amber-400 text-amber-400'
+                      : 'text-gray-200 dark:text-gray-700'
+                  }`}
+                />
+              ))}
+            </div>
+            <span className="text-xs text-gray-500 dark:text-gray-400">({reviews})</span>
           </div>
-          <span className="text-xs text-gray-500 dark:text-gray-400">({product.reviews})</span>
-        </div>
+        )}
 
-        <div className="mt-auto pt-4 flex items-center justify-between">
-          {/* Price */}
+        {/* Price + CTA */}
+        <div className="mt-auto flex items-center justify-between pt-4">
           <span className="font-display text-2xl font-black text-pink-600 dark:text-pink-400">
             ₾{product.price.toFixed(2)}
           </span>
 
-          {/* Add to Cart */}
           <motion.button
             whileTap={{ scale: 0.93 }}
             onClick={handleAdd}
-            className={`flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-bold transition-all ${
+            disabled={!product.in_stock}
+            className={`flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-bold transition-all disabled:cursor-not-allowed disabled:opacity-40 ${
               added
                 ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-400/30'
                 : 'bg-gradient-to-r from-fuchsia-600 to-pink-500 text-white shadow-lg shadow-pink-400/30 hover:shadow-xl hover:shadow-pink-400/40'
             }`}
           >
             {added ? (
-              <>
-                <Check className="h-4 w-4" />
-                {t('Added!', 'დამატებულია!')}
-              </>
+              <><Check className="h-4 w-4" />{t('Added!', 'დამატებულია!')}</>
             ) : (
-              <>
-                <ShoppingCart className="h-4 w-4" />
-                {t('Add', 'დამატება')}
-              </>
+              <><ShoppingCart className="h-4 w-4" />{t('Add', 'დამატება')}</>
             )}
           </motion.button>
         </div>
@@ -393,20 +272,120 @@ function ProductCard({ product, index }: { product: typeof products[0]; index: n
   )
 }
 
+// ─── Category filter bar ──────────────────────────────────────────────────────
+
+function CategoryBar({
+  categories,
+  active,
+  onChange,
+}: {
+  categories: { id: string; label: string }[]
+  active: string
+  onChange: (id: string) => void
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.2 }}
+      className="mb-8 flex flex-wrap items-center justify-center gap-2"
+    >
+      <Filter className="h-4 w-4 text-gray-400" />
+      {categories.map((cat) => (
+        <button
+          key={cat.id}
+          onClick={() => onChange(cat.id)}
+          className={`rounded-xl px-4 py-2 text-sm font-semibold capitalize transition-all ${
+            active === cat.id
+              ? 'bg-gradient-to-r from-fuchsia-600 to-pink-500 text-white shadow-lg shadow-pink-400/30'
+              : 'bg-white/70 text-gray-600 hover:text-pink-600 dark:bg-gray-800/70 dark:text-gray-300 dark:hover:text-pink-400'
+          }`}
+        >
+          {cat.label}
+        </button>
+      ))}
+    </motion.div>
+  )
+}
+
+// ─── Empty state ──────────────────────────────────────────────────────────────
+
+function EmptyState({ t }: { t: (en: string, ge: string) => string }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+      className="flex flex-col items-center gap-4 py-24 text-center"
+    >
+      <PackageSearch className="h-16 w-16 text-gray-300 dark:text-gray-700" />
+      <p className="text-lg font-semibold text-gray-400 dark:text-gray-600">
+        {t('No products in this category yet.', 'ამ კატეგორიაში პროდუქტი ჯერ არ არის.')}
+      </p>
+    </motion.div>
+  )
+}
+
+// ─── Error state ──────────────────────────────────────────────────────────────
+
+function ErrorState({ message, onRetry, t }: {
+  message: string
+  onRetry: () => void
+  t: (en: string, ge: string) => string
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+      className="flex flex-col items-center gap-4 py-24 text-center"
+    >
+      <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-rose-100 dark:bg-rose-900/30">
+        <AlertCircle className="h-8 w-8 text-rose-500" />
+      </div>
+      <p className="text-sm font-semibold text-rose-500">{message}</p>
+      <button
+        onClick={onRetry}
+        className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-fuchsia-600 to-pink-500 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-pink-400/30"
+      >
+        <RefreshCw className="h-4 w-4" />
+        {t('Try again', 'ხელახლა ცდა')}
+      </button>
+    </motion.div>
+  )
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-export default function ShopPage() {
+export default function ShopClient() {
   const { t } = useLang()
+
+  const [products,       setProducts]       = useState<DbProduct[]>([])
+  const [loading,        setLoading]        = useState(true)
+  const [error,          setError]          = useState<string | null>(null)
   const [activeCategory, setActiveCategory] = useState('all')
 
+  /** Fetch (or re-fetch) products from Supabase */
+  const fetchData = useCallback(async () => {
+    setLoading(true)
+    setError(null)
+    const { data, error: err } = await loadProducts()
+    if (err) setError(err)
+    else setProducts(data)
+    setLoading(false)
+  }, [])
+
+  useEffect(() => { fetchData() }, [fetchData])
+
+  // Derive category list from live data
+  const categories = buildCategories(products, t)
+
+  // Client-side filter
   const filtered =
     activeCategory === 'all'
       ? products
       : products.filter((p) => p.category === activeCategory)
 
   return (
-    <div className="mx-auto max-w-7xl px-4 pt-28 pb-20 sm:px-6 lg:px-8">
-      {/* Header */}
+    <div className="mx-auto max-w-7xl px-4 pb-20 pt-28 sm:px-6 lg:px-8">
+
+      {/* ── Page header ──────────────────────────────── */}
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
@@ -417,7 +396,9 @@ export default function ShopPage() {
           <Sparkles className="h-4 w-4" />
           {t('Our Collection', 'ჩვენი კოლექცია')}
         </span>
-        <h1 className="section-heading">{t('Magical Toy Shop', 'ჯადოსნური სათამაშოები')}</h1>
+        <h1 className="section-heading">
+          {t('Magical Toy Shop', 'ჯადოსნური სათამაშოები')}
+        </h1>
         <p className="mt-3 text-gray-600 dark:text-gray-400">
           {t(
             'Hand-picked toys for curious, creative, and joyful kids',
@@ -426,41 +407,52 @@ export default function ShopPage() {
         </p>
       </motion.div>
 
-      {/* Category Filter */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-        className="mb-8 flex flex-wrap items-center justify-center gap-2"
-      >
-        <Filter className="h-4 w-4 text-gray-400" />
-        {categories.map((cat) => (
-          <button
-            key={cat.id}
-            onClick={() => setActiveCategory(cat.id)}
-            className={`rounded-xl px-4 py-2 text-sm font-semibold transition-all ${
-              activeCategory === cat.id
-                ? 'bg-gradient-to-r from-fuchsia-600 to-pink-500 text-white shadow-lg shadow-pink-400/30'
-                : 'bg-white/70 text-gray-600 hover:text-pink-600 dark:bg-gray-800/70 dark:text-gray-300 dark:hover:text-pink-400'
-            }`}
-          >
-            {t(cat.label, cat.labelGe)}
-          </button>
-        ))}
-      </motion.div>
-
-      {/* Product Grid */}
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {filtered.map((product, i) => (
-          <ProductCard key={product.id} product={product} index={i} />
-        ))}
-      </div>
-
-      {filtered.length === 0 && (
-        <div className="py-24 text-center text-gray-500">
-          {t('No products in this category yet.', 'ამ კატეგორიაში პროდუქტი ჯერ არ არის.')}
-        </div>
+      {/* ── Category filter — hidden while loading ────── */}
+      {!loading && !error && products.length > 0 && (
+        <CategoryBar
+          categories={categories}
+          active={activeCategory}
+          onChange={(id) => { setActiveCategory(id) }}
+        />
       )}
+
+      {/* ── Main content area ─────────────────────────── */}
+      <AnimatePresence mode="wait">
+
+        {/* Loading skeletons */}
+        {loading && (
+          <motion.div
+            key="skeletons"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+          >
+            {Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} />)}
+          </motion.div>
+        )}
+
+        {/* Error state */}
+        {!loading && error && (
+          <motion.div key="error" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <ErrorState message={error} onRetry={fetchData} t={t} />
+          </motion.div>
+        )}
+
+        {/* Product grid */}
+        {!loading && !error && (
+          <motion.div key="grid" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            {filtered.length === 0 ? (
+              <EmptyState t={t} />
+            ) : (
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {filtered.map((product, i) => (
+                  <ProductCard key={product.id} product={product} index={i} />
+                ))}
+              </div>
+            )}
+          </motion.div>
+        )}
+
+      </AnimatePresence>
     </div>
   )
 }
