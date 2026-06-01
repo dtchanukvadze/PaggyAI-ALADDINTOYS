@@ -18,8 +18,9 @@
         "name": "next"
       }
     ],
+    "moduleResolution": "bundler", 
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./app/*"]
     }
   },
   "include": [

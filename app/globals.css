@@ -1,26 +1,50 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  /* Define custom color variables */
+  --color-primary: #e8007d;
+  --color-secondary: #f59e0b;
+  --color-bg: #fff8fb;
+  --color-surface: #ffffff;
+  --color-text: #1a0a12;
+  --color-muted: #6b7280;
+
+  /* Map your font variables defined in layout.tsx */
+  --font-body: var(--font-body);
+  --font-display: var(--font-display);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+/* ─── Base ──────────────────────────────────────────────────────────────────── */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  body {
+    @apply text-[var(--color-text)] bg-[var(--color-bg)] font-body;
+  }
+
+  .dark {
+    @apply bg-[#07030a] text-[#f9f0f6];
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* ─── Components ────────────────────────────────────────────────────────────── */
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-fuchsia-600 to-pink-500 px-6 py-3 font-bold text-white shadow-lg shadow-pink-400/30 transition-all hover:-translate-y-0.5 hover:shadow-xl hover:shadow-pink-400/40 active:translate-y-0;
+  }
+
+  .card {
+    @apply rounded-3xl bg-white/80 p-6 shadow-xl shadow-pink-100/40 backdrop-blur-sm dark:bg-gray-900/80 dark:shadow-pink-900/20;
+  }
+
+  /* Now font-display works because it's defined in @theme above */
+  .section-heading {
+    @apply font-display text-4xl font-extrabold text-gray-900 dark:text-white md:text-5xl;
+  }
+
+  .glow-badge {
+    @apply inline-flex items-center gap-2 rounded-full border border-pink-200 bg-pink-50 px-4 py-1.5 text-sm font-bold text-pink-600 dark:border-pink-800 dark:bg-pink-900/30 dark:text-pink-400;
+  }
 }
