@@ -94,12 +94,193 @@ const products = [
     badge: 'Fan Favorite',
     badgeGe: 'საყვარელი',
     description: 'Super-soft giant unicorn plush toy with rainbow mane, 60cm tall.',
-    descriptionGe: 'სუპერ რბილი უნიკორნი ცისარტყელა ფაფხუნით, 60სმ.',
+    descriptionGe: 'სუპერ რბილი უნიკორნი ცისარტყელა ფაფარით, 60სმ.',
     image: '🦄',
     gradient: 'from-violet-400 to-purple-500',
   },
+  {
+    id: 'prod-7',
+    name: 'Monopoly Family Edition',
+    nameGe: 'მონოპოლია — საოჯახო გამოცემა',
+    category: 'games',
+    price: 39.99,
+    rating: 4,
+    reviews: 312,
+    badge: 'Classic',
+    badgeGe: 'კლასიკა',
+    description: 'The classic real estate trading board game for the whole family.',
+    descriptionGe: 'კლასიკური სამაგიდო თამაში მთელი ოჯახისთვის.',
+    image: '🎲',
+    gradient: 'from-blue-500 to-indigo-600',
+  },
+  {
+    id: 'prod-8',
+    name: 'Galaxy Guardian Action Figure',
+    nameGe: 'გალაქტიკის მცველის ფიგურა',
+    category: 'action-figures',
+    price: 24.99,
+    rating: 4,
+    reviews: 89,
+    badge: 'Trending',
+    badgeGe: 'ტრენდული',
+    description: 'Fully articulated superhero action figure with glowing accessories.',
+    descriptionGe: 'მოძრავი სუპერგმირის ფიგურა მანათობელი აქსესუარებით.',
+    image: '🦸‍♂️',
+    gradient: 'from-cyan-400 to-blue-500',
+  },
+  {
+    id: 'prod-9',
+    name: 'Magnetic Building Tiles (100pc)',
+    nameGe: 'მაგნიტური კონსტრუქტორი (100 ნაწილი)',
+    category: 'building',
+    price: 54.99,
+    rating: 5,
+    reviews: 415,
+    badge: 'Award Winner',
+    badgeGe: 'ჯილდოს მფლობელი',
+    description: 'Colorful 3D magnetic building blocks that inspire creativity and logic.',
+    descriptionGe: 'ფერადი 3D მაგნიტური კონსტრუქტორი ლოგიკისა და კრეატივისთვის.',
+    image: '🧲',
+    gradient: 'from-yellow-400 to-orange-500',
+  },
+  {
+    id: 'prod-10',
+    name: 'Glamour Fashion Doll',
+    nameGe: 'მოდური თოჯინა აქსესუარებით',
+    category: 'dolls',
+    price: 32.99,
+    rating: 4,
+    reviews: 156,
+    badge: 'Popular',
+    badgeGe: 'პოპულარული',
+    description: 'Includes 10 outfit changes, stylish shoes, and a portable wardrobe.',
+    descriptionGe: 'მოყვება 10 ტანსაცმელი, ფეხსაცმელი და პორტატული კარადა.',
+    image: '👗',
+    gradient: 'from-pink-300 to-rose-400',
+  },
+  {
+    id: 'prod-11',
+    name: 'Classic Wooden Train Track',
+    nameGe: 'კლასიკური ხის მატარებელი',
+    category: 'vehicles',
+    price: 79.99,
+    rating: 5,
+    reviews: 210,
+    badge: 'Bestseller',
+    badgeGe: 'ბესტსელერი',
+    description: '50-piece traditional wooden railway set with bridges and stations.',
+    descriptionGe: '50-ნაწილიანი ტრადიციული ხის რკინიგზა ხიდებითა და სადგურით.',
+    image: '🚂',
+    gradient: 'from-amber-600 to-orange-700',
+  },
+  {
+    id: 'prod-12',
+    name: 'DIY Solar System Model',
+    nameGe: 'მზის სისტემის მოდელი',
+    category: 'educational',
+    price: 22.99,
+    rating: 4,
+    reviews: 94,
+    badge: 'STEM',
+    badgeGe: 'STEM',
+    description: 'Paint and assemble your own glowing planetarium model of the solar system.',
+    descriptionGe: 'ააწყვე და გააფერადე მანათობელი მზის სისტემის მოდელი.',
+    image: '🪐',
+    gradient: 'from-indigo-800 to-purple-900',
+  },
+  {
+    id: 'prod-13',
+    name: 'Giant Teddy Bear (120cm)',
+    nameGe: 'გიგანტური დათუნია (120სმ)',
+    category: 'plush',
+    price: 99.99,
+    rating: 5,
+    reviews: 342,
+    badge: 'Gift Idea',
+    badgeGe: 'საჩუქარი',
+    description: 'Ultra-huggable, premium quality giant teddy bear. The perfect gift.',
+    descriptionGe: 'უმაღლესი ხარისხის, გიგანტური პლუშის დათუნია. საუკეთესო საჩუქარი.',
+    image: '🧸',
+    gradient: 'from-amber-300 to-yellow-600',
+  },
+  {
+    id: 'prod-14',
+    name: 'Premium Wooden Chess Set',
+    nameGe: 'პრემიუმ ხის ჭადრაკი',
+    category: 'games',
+    price: 45.99,
+    rating: 5,
+    reviews: 112,
+    badge: 'Classic',
+    badgeGe: 'კლასიკა',
+    description: 'Hand-carved wooden chess and checkers set with a folding storage board.',
+    descriptionGe: 'ხელით გამოთლილი ხის ჭადრაკი და შაში დასაკეცი დაფით.',
+    image: '♟️',
+    gradient: 'from-stone-600 to-stone-800',
+  },
+  {
+    id: 'prod-15',
+    name: 'Interactive Roaring T-Rex',
+    nameGe: 'ინტერაქტიული დინოზავრი T-Rex',
+    category: 'action-figures',
+    price: 39.99,
+    rating: 4,
+    reviews: 205,
+    badge: 'New',
+    badgeGe: 'სიახლე',
+    description: 'Walking, roaring T-Rex dinosaur with realistic sounds and glowing eyes.',
+    descriptionGe: 'მოძრავი დინოზავრი რეალისტური ხმებით და მანათობელი თვალებით.',
+    image: '🦖',
+    gradient: 'from-lime-500 to-emerald-600',
+  },
+  {
+    id: 'prod-16',
+    name: 'Space Explorer Building Kit',
+    nameGe: 'კოსმოსური სადგურის კონსტრუქტორი',
+    category: 'building',
+    price: 109.99,
+    rating: 5,
+    reviews: 67,
+    badge: 'Premium',
+    badgeGe: 'პრემიუმი',
+    description: 'Highly detailed 800+ piece space station model with astronaut mini-figures.',
+    descriptionGe: 'დეტალური 800+ ნაწილიანი კოსმოსური სადგური ასტრონავტებით.',
+    image: '🚀',
+    gradient: 'from-slate-700 to-slate-900',
+  },
+  {
+    id: 'prod-17',
+    name: 'Interactive Baby Doll & Stroller',
+    nameGe: 'ჩვილი თოჯინა და ეტლი',
+    category: 'dolls',
+    price: 59.99,
+    rating: 4,
+    reviews: 124,
+    badge: 'Bundle',
+    badgeGe: 'ნაკრები',
+    description: 'Lifelike baby doll that cries and laughs, includes a fully foldable stroller.',
+    descriptionGe: 'რეალისტური ჩვილი, რომელიც ტირის და იცინის, დასაკეცი ეტლით.',
+    image: '🍼',
+    gradient: 'from-rose-200 to-pink-300',
+  },
+  {
+    id: 'prod-18',
+    name: 'Mini Quadcopter Drone',
+    nameGe: 'მინი დრონი კვადროკოპტერი',
+    category: 'vehicles',
+    price: 89.99,
+    rating: 4,
+    reviews: 178,
+    badge: 'Tech',
+    badgeGe: 'ტექნიკა',
+    description: 'Beginner-friendly mini drone with an HD camera, auto-hover, and flips.',
+    descriptionGe: 'მარტივად მართვადი მინი დრონი HD კამერით და ავტომატური ბალანსით.',
+    image: '🚁',
+    gradient: 'from-zinc-400 to-zinc-600',
+  }
 ]
 
+// 🟢 Added 'Games' and 'Action Figures' to the filter list
 const categories = [
   { id: 'all', label: 'All', labelGe: 'ყველა' },
   { id: 'building', label: 'Building', labelGe: 'კუბიკები' },
@@ -107,6 +288,8 @@ const categories = [
   { id: 'vehicles', label: 'Vehicles', labelGe: 'მანქანები' },
   { id: 'educational', label: 'Educational', labelGe: 'სასწავლო' },
   { id: 'plush', label: 'Plush', labelGe: 'პლუში' },
+  { id: 'games', label: 'Games', labelGe: 'თამაშები' },
+  { id: 'action-figures', label: 'Figures', labelGe: 'ფიგურები' },
 ]
 
 // ─── Product Card ─────────────────────────────────────────────────────────────
@@ -135,7 +318,7 @@ function ProductCard({ product, index }: { product: typeof products[0]; index: n
       ref={ref}
       initial={{ opacity: 0, y: 40 }}
       animate={inView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.5, delay: index * 0.08 }}
+      transition={{ duration: 0.5, delay: (index % 10) * 0.08 }} // 🟢 Modulo prevents huge delays on lower rows
       whileHover={{ y: -6 }}
       className="card group flex flex-col overflow-hidden"
     >
@@ -234,7 +417,7 @@ export default function ShopPage() {
           <Sparkles className="h-4 w-4" />
           {t('Our Collection', 'ჩვენი კოლექცია')}
         </span>
-        <h1 className="section-heading">{t('Magical Toy Shop', 'ჯადოსნური სათამაშო')}</h1>
+        <h1 className="section-heading">{t('Magical Toy Shop', 'ჯადოსნური სათამაშოები')}</h1>
         <p className="mt-3 text-gray-600 dark:text-gray-400">
           {t(
             'Hand-picked toys for curious, creative, and joyful kids',
@@ -267,7 +450,7 @@ export default function ShopPage() {
       </motion.div>
 
       {/* Product Grid */}
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {filtered.map((product, i) => (
           <ProductCard key={product.id} product={product} index={i} />
         ))}

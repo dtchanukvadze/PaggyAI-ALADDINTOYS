@@ -1,7 +1,10 @@
 @import "tailwindcss";
 
+/* 🟢 1. Tell Tailwind v4 how to handle dark: utility classes */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* 🟢 2. Define your Light Theme (Default) directly in Tailwind's @theme block */
 @theme {
-  /* Define custom color variables */
   --color-primary: #e8007d;
   --color-secondary: #f59e0b;
   --color-bg: #fff8fb;
@@ -9,23 +12,30 @@
   --color-text: #1a0a12;
   --color-muted: #6b7280;
 
-  /* Map your font variables defined in layout.tsx */
   --font-body: var(--font-body);
   --font-display: var(--font-display);
 }
 
-/* ─── Base ──────────────────────────────────────────────────────────────────── */
+/* 🟢 3. Define Dark Theme overrides outside of @layer for maximum CSS specificity */
+:root.dark {
+  --color-primary: #ff55b8;
+  --color-secondary: #fbbf24;
+  --color-bg: #07030a;
+  --color-surface: #1a0a12;
+  --color-text: #f9f0f6;
+  --color-muted: #9ca3af;
+}
+
+/* 🟢 4. Apply the swappable variables to the body */
 @layer base {
   html {
     scroll-behavior: smooth;
   }
 
   body {
-    @apply text-[var(--color-text)] bg-[var(--color-bg)] font-body;
-  }
-
-  .dark {
-    @apply bg-[#07030a] text-[#f9f0f6];
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    font-family: var(--font-body);
   }
 }
 
@@ -39,7 +49,6 @@
     @apply rounded-3xl bg-white/80 p-6 shadow-xl shadow-pink-100/40 backdrop-blur-sm dark:bg-gray-900/80 dark:shadow-pink-900/20;
   }
 
-  /* Now font-display works because it's defined in @theme above */
   .section-heading {
     @apply font-display text-4xl font-extrabold text-gray-900 dark:text-white md:text-5xl;
   }

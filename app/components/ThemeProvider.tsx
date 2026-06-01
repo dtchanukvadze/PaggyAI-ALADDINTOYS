@@ -1,3 +1,4 @@
+// components/theme-provider.tsx
 'use client'
 
 import * as React from 'react'
@@ -8,11 +9,7 @@ export function ThemeProvider({
   ...props 
 }: React.ComponentProps<typeof NextThemesProvider>) {
   return (
-    <NextThemesProvider 
-      {...props} 
-      // 🟢 Fixes the React 19 / Next.js 16 false-positive script warning
-      scriptProps={{ type: "application/json" } as any} 
-    >
+    <NextThemesProvider {...props}>
       {children}
     </NextThemesProvider>
   )
