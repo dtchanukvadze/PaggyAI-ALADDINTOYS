@@ -62,6 +62,7 @@ function CartSummary() {
             </div>
             <div className="flex items-center gap-1">
               <button
+                type="button"
                 onClick={() => updateQuantity(item.id, item.quantity - 1)}
                 className="flex h-7 w-7 items-center justify-center rounded-lg bg-white text-gray-600 shadow-sm hover:text-pink-600 dark:bg-gray-700 dark:text-gray-300"
               >
@@ -71,12 +72,14 @@ function CartSummary() {
                 {item.quantity}
               </span>
               <button
+                type="button"
                 onClick={() => updateQuantity(item.id, item.quantity + 1)}
                 className="flex h-7 w-7 items-center justify-center rounded-lg bg-white text-gray-600 shadow-sm hover:text-pink-600 dark:bg-gray-700 dark:text-gray-300"
               >
                 <Plus className="h-3 w-3" />
               </button>
               <button
+                type="button"
                 onClick={() => removeItem(item.id)}
                 className="ml-1 flex h-7 w-7 items-center justify-center rounded-lg text-gray-400 hover:text-rose-500"
               >
@@ -107,7 +110,7 @@ function FormInput({
 }: {
   label: string; name: string; type?: string; required?: boolean
   icon: React.ElementType; placeholder: string; value: string
-  onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
 }) {
   return (
     <div>
@@ -135,6 +138,7 @@ function FormInput({
 export default function CheckoutPage() {
   const { t } = useLang()
   const { items, totalPrice, clearCart } = useCartStore()
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [formspreeState, submitToFormspree] = useForm(FORMSPREE_ID)
   const [submitting, setSubmitting] = useState(false)
   const [success, setSuccess] = useState(false)
@@ -151,7 +155,7 @@ export default function CheckoutPage() {
   const update = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
     setForm((f) => ({ ...f, [e.target.name]: e.target.value }))
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     if (items.length === 0) {
       setError(t('Please add items to your cart first.', 'გთხოვთ, ჯერ კალათაში დაამატეთ პროდუქტი.'))
@@ -161,14 +165,20 @@ export default function CheckoutPage() {
     setError(null)
 
     try {
-      // 1. Submit to Formspree (email notification)
-      await submitToFormspree({
+      // 1. Submit to Formspree, casting to 'any' to bypass the strict 'void' TypeScript definition
+      const result = (await submitToFormspree({
         ...form,
-        items: JSON.stringify(items),
-        total: totalPrice().toFixed(2),
-      })
+        items: items.map((i) => `${i.name} x${i.quantity}`).join(', '),
+        total: `₾${totalPrice().toFixed(2)}`,
+      })) as any
 
-      // 2. Submit to Supabase (database record)
+      // 2. Safely check for submission errors. 
+      // Using optional chaining (?.) ensures it won't crash if the result is genuinely undefined
+      if (result?.errors) {
+        throw new Error('Formspree submission failed')
+      }
+
+      // 3. Submit to Supabase (database record)
       const { error: dbError } = await insertOrder({
         customer_name: form.name,
         customer_email: form.email,
@@ -186,7 +196,7 @@ export default function CheckoutPage() {
 
       if (dbError) {
         console.error('Supabase error:', dbError)
-        // Continue even if DB fails — Formspree email was sent
+        // Opting to continue since email notification went through safely
       }
 
       clearCart()
@@ -224,7 +234,7 @@ export default function CheckoutPage() {
           </h2>
           <p className="mt-3 text-gray-600 dark:text-gray-400">
             {t(
-              'Thank you! We\'ll contact you shortly to confirm your order and arrange delivery.',
+              "Thank you! We'll contact you shortly to confirm your order and arrange delivery.",
               'გმადლობთ! მალე დაგიკავშირდებით შეკვეთის დასადასტურებლად.'
             )}
           </p>
@@ -253,7 +263,7 @@ export default function CheckoutPage() {
         </span>
         <h1 className="section-heading">{t('Checkout', 'გადახდა')}</h1>
         <p className="mt-2 text-gray-600 dark:text-gray-400">
-          {t('Fill in your details and we\'ll take care of the rest', 'შეავსე დეტალები — დანარჩენს ჩვენ ვიზრუნებთ')}
+          {t("Fill in your details and we'll take care of the rest", 'შეავსე დეტალები — დანარჩენს ჩვენ ვიზრუნებთ')}
         </p>
       </motion.div>
 
@@ -315,10 +325,6 @@ export default function CheckoutPage() {
                 />
               </div>
             </div>
-
-            {/* Hidden fields for Formspree */}
-            <input type="hidden" name="items" value={JSON.stringify(items.map(i => `${i.name} x${i.quantity}`))} />
-            <input type="hidden" name="total" value={`₾${totalPrice().toFixed(2)}`} />
 
             {/* Error */}
             <AnimatePresence>
