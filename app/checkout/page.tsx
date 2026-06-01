@@ -52,10 +52,22 @@ function CartSummary() {
             exit={{ opacity: 0, x: 20 }}
             className="flex items-center gap-3 rounded-xl bg-gray-50 px-3 py-2.5 dark:bg-gray-800/50"
           >
-            {/* Emoji / image */}
-            <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-white text-xl shadow-sm dark:bg-gray-700">
-              {item.image}
-            </div>
+            <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-white text-xl shadow-sm dark:bg-gray-700 overflow-hidden">
+                {item.image?.startsWith('http') ? (
+                  <img
+                    src={item.image}
+                    alt={item.name}
+                    className="h-full w-full object-cover rounded-lg"
+                    onError={(e) => {
+                      // fallback to a placeholder box if image fails to load
+                      e.currentTarget.style.display = 'none'
+                      e.currentTarget.parentElement!.textContent = '🛍️'
+                    }}
+                  />
+                ) : (
+                  item.image
+                )}
+              </div>
 
             {/* Name + price */}
             <div className="min-w-0 flex-1">
