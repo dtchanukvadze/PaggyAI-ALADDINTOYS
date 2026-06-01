@@ -34,7 +34,7 @@ const floatAnimation = {
   transition: {
     duration: 6,
     repeat: Infinity,
-    ease: "easeInOut"
+    ease: "easeInOut" as const // 🟢 Added 'as const' to fix the TS error
   }
 }
 
@@ -158,13 +158,15 @@ export default function HomePage() {
               </div>
             </motion.div>
 
-            <motion.div animate={{...floatAnimation, transition: { duration: 7, repeat: Infinity, ease: "easeInOut" }}} className="absolute z-30 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+            {/* 🟢 Added 'as const' to fix the TS error here too */}
+            <motion.div animate={{...floatAnimation, transition: { duration: 7, repeat: Infinity, ease: "easeInOut" as const }}} className="absolute z-30 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
               <div className="card !p-8 border-2 border-pink-100 dark:border-pink-900/50 scale-125 shadow-2xl shadow-pink-500/20">
                 <div className="w-32 h-32 rounded-3xl bg-gradient-to-br from-fuchsia-400 to-pink-600 flex items-center justify-center text-7xl shadow-inner">🏰</div>
               </div>
             </motion.div>
 
-            <motion.div animate={{...floatAnimation, transition: { duration: 5, repeat: Infinity, ease: "easeInOut" }}} className="absolute z-20 bottom-10 right-10">
+            {/* 🟢 Added 'as const' to fix the TS error here too */}
+            <motion.div animate={{...floatAnimation, transition: { duration: 5, repeat: Infinity, ease: "easeInOut" as const }}} className="absolute z-20 bottom-10 right-10">
               <div className="card !p-4 flex items-center gap-4 rotate-[8deg]">
                 <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center text-4xl shadow-inner">🧩</div>
                 <div>
